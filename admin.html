@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Feedback System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-wrapper">
+
+<!-- ── NAVIGATION BAR ── -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div class="navbar-logo">🎓</div>
+        <div>
+            <div class="navbar-title">Feedback System</div>
+            <div class="navbar-subtitle">ADMIN DASHBOARD</div>
+        </div>
+    </div>
+    <div class="navbar-right">
+        <span class="navbar-user">Admin: <span id="adminName">Admin</span></span>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="main-content container">
+
+    <!-- Stats Summary Cards -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-icon">📬</div>
+            <div><div class="stat-value" id="statFeedback">—</div><div class="stat-label">Total Feedback</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div><div class="stat-value" id="statStudents">—</div><div class="stat-label">Students Registered</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div><div class="stat-value" id="statCourses">—</div><div class="stat-label">Courses Listed</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div><div class="stat-value" id="statAvg">—</div><div class="stat-label">Avg Overall Rating</div></div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-nav-btn active" onclick="showTab('feedback', this)">📬 All Feedback</button>
+        <button class="tab-nav-btn" onclick="showTab('courses', this)">📊 Course Analysis</button>
+        <button class="tab-nav-btn" onclick="showTab('students', this)">👥 Students</button>
+        <button class="tab-nav-btn" onclick="showTab('ratings', this)">📈 Rating Chart</button>
+    </div>
+
+    <!-- ══ TAB 1: ALL FEEDBACK ══ -->
+    <div id="tab-feedback" class="tab-panel active">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📬</span>
+                <div>
+                    <h2>All Student Feedback</h2>
+                    <p>Filter and manage all submitted feedback</p>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="form-group">
+                        <label>Filter by Course</label>
+                        <select id="filterCourse" onchange="loadFeedback()">
+                            <option value="">All Courses</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Rating</label>
+                        <select id="filterRating" onchange="loadFeedback()">
+                            <option value="1">All Ratings</option>
+                            <option value="3">3+ Stars</option>
+                            <option value="4">4+ Stars</option>
+                            <option value="5">5 Stars only</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="loadFeedback()">🔄 Refresh</button>
+                </div>
+
+                <div id="feedbackTable">
+                    <div class="empty-state"><div class="empty-icon">⏳</div><p>Loading feedback...</p></div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" style="display:flex; gap:8px; justify-content:center; margin-top:20px; flex-wrap:wrap;"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TAB 2: COURSE ANALYSIS ══ -->
+    <div id="tab-courses" class="tab-panel">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <div>
+                    <h2>Course-wise Analysis</h2>
+                    <p>Average ratings per course, sorted by performance</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="courseStats">
+                    <div class="empty-state"><div class="empty-icon">⏳</div><p>Loading course data...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TAB 3: STUDENTS ══ -->
+    <div id="tab-students" class="tab-panel">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">👥</span>
+                <div>
+                    <h2>Registered Students</h2>
+                    <p>All students and their submission counts</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="studentsList">
+                    <div class="empty-state"><div class="empty-icon">⏳</div><p>Loading students...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TAB 4: RATING DISTRIBUTION CHART ══ -->
+    <div id="tab-ratings" class="tab-panel">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📈</span>
+                <div>
+                    <h2>Rating Distribution</h2>
+                    <p>How students are rating courses overall</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="ratingChart" style="padding: 20px 0;"></div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer>Student Feedback System &copy; 2024 — Admin Portal</footer>
+
+<!-- Confirm Delete Modal (simple overlay) -->
+<div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:32px; max-width:400px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+        <h3 style="margin-bottom:12px;">🗑️ Delete Feedback?</h3>
+        <p style="margin-bottom:24px; color:var(--gray-500);">This action cannot be undone. Are you sure you want to delete this feedback entry?</p>
+        <div style="display:flex; gap:12px;">
+            <button class="btn btn-danger btn-full" onclick="confirmDelete()">Yes, Delete</button>
+            <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+let deleteTargetId = null;
+
+// ── INIT ───────────────────────────────────
+window.addEventListener('load', async () => {
+    const res = await fetch('/auth/me');
+    const data = await res.json();
+    if (!data.success || data.user.role !== 'admin') {
+        window.location.href = '/';
+        return;
+    }
+    document.getElementById('adminName').textContent = data.user.name;
+    loadSummary();
+    loadFeedback();
+    loadFilterCourses();
+});
+
+// ── LOAD SUMMARY STATS ─────────────────────
+async function loadSummary() {
+    const res  = await fetch('/admin/summary');
+    const data = await res.json();
+    if (!data.success) return;
+    const s = data.summary;
+    document.getElementById('statFeedback').textContent = s.totalFeedback || 0;
+    document.getElementById('statStudents').textContent = s.totalStudents || 0;
+    document.getElementById('statCourses').textContent  = s.totalCourses || 0;
+    document.getElementById('statAvg').textContent      = s.avgRating ? s.avgRating + ' ★' : 'N/A';
+    renderRatingChart(data.ratingDistribution);
+}
+
+// ── LOAD COURSE FILTER OPTIONS ─────────────
+async function loadFilterCourses() {
+    const res  = await fetch('/admin/courses');
+    const data = await res.json();
+    const sel  = document.getElementById('filterCourse');
+    data.courses.forEach(c => {
+        sel.innerHTML += `<option value="${c.id}">${c.course_code} — ${c.course_name}</option>`;
+    });
+}
+
+// ── LOAD ALL FEEDBACK (with pagination) ────
+async function loadFeedback(page = 1) {
+    currentPage = page;
+    const courseId   = document.getElementById('filterCourse').value;
+    const minRating  = document.getElementById('filterRating').value;
+    let url = `/admin/all-feedback?page=${page}&limit=8&min_rating=${minRating}`;
+    if (courseId) url += `&course_id=${courseId}`;
+
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    if (!data.success || data.feedback.length === 0) {
+        document.getElementById('feedbackTable').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>No feedback found matching your filters.</p>
+            </div>`;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+
+    let html = `
+        <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Teacher</th>
+                    <th>Teaching</th>
+                    <th>Content</th>
+                    <th>Difficulty</th>
+                    <th>Overall</th>
+                    <th>Comments</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    data.feedback.forEach((f, i) => {
+        const date = new Date(f.submitted_at).toLocaleDateString('en-IN');
+        html += `
+            <tr>
+                <td>${(page - 1) * 8 + i + 1}</td>
+                <td><strong>${f.student_name}</strong><br><small>${f.roll_number}</small></td>
+                <td><strong>${f.course_code}</strong><br><small>${f.course_name}</small></td>
+                <td>${f.teacher_name}</td>
+                <td>${renderStars(f.teaching_rating)}</td>
+                <td>${renderStars(f.content_rating)}</td>
+                <td>${renderStars(f.difficulty_rating)}</td>
+                <td><span class="rating-badge rating-${f.overall_rating}">${f.overall_rating}/5</span></td>
+                <td style="max-width:180px; font-size:0.8rem;">${f.comments || '<em style="color:var(--gray-500)">—</em>'}</td>
+                <td style="white-space:nowrap; font-size:0.8rem;">${date}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="openDeleteModal(${f.id})">Delete</button></td>
+            </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    document.getElementById('feedbackTable').innerHTML = html;
+
+    // Render pagination buttons
+    const { totalPages } = data.pagination;
+    let pgHtml = '';
+    for (let i = 1; i <= totalPages; i++) {
+        pgHtml += `<button class="btn btn-sm ${i === page ? 'btn-primary' : 'btn-ghost'}" onclick="loadFeedback(${i})">${i}</button>`;
+    }
+    document.getElementById('pagination').innerHTML = pgHtml;
+}
+
+// ── LOAD COURSE STATS ──────────────────────
+async function loadCourseStats() {
+    const res  = await fetch('/admin/course-stats');
+    const data = await res.json();
+    const container = document.getElementById('courseStats');
+
+    if (!data.courseStats || data.courseStats.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>No data available.</p></div>`;
+        return;
+    }
+
+    let html = `<div class="table-wrapper"><table>
+        <thead><tr>
+            <th>Course</th><th>Teacher</th><th>Dept</th><th>Sem</th>
+            <th>Responses</th><th>Avg Teaching</th><th>Avg Content</th>
+            <th>Avg Difficulty</th><th>Avg Overall</th>
+        </tr></thead><tbody>`;
+
+    data.courseStats.forEach(c => {
+        const avg = c.avg_overall || 0;
+        const barWidth = (avg / 5) * 100;
+        html += `
+            <tr>
+                <td><strong>${c.course_code}</strong><br><small>${c.course_name}</small></td>
+                <td>${c.teacher_name}</td>
+                <td>${c.department}</td>
+                <td>${c.semester}</td>
+                <td><span class="rating-badge rating-${Math.round(avg) || 3}">${c.total_responses}</span></td>
+                <td>${c.avg_teaching || '—'}</td>
+                <td>${c.avg_content || '—'}</td>
+                <td>${c.avg_difficulty || '—'}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="progress-bar-wrap" style="width:80px;">
+                            <div class="progress-bar" style="width:${barWidth}%"></div>
+                        </div>
+                        <strong>${c.avg_overall || '—'}</strong>
+                    </div>
+                </td>
+            </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+// ── LOAD STUDENTS LIST ─────────────────────
+async function loadStudents() {
+    const res  = await fetch('/admin/students');
+    const data = await res.json();
+    const container = document.getElementById('studentsList');
+
+    let html = `<div class="table-wrapper"><table>
+        <thead><tr>
+            <th>#</th><th>Name</th><th>Roll No</th><th>Email</th>
+            <th>Department</th><th>Semester</th><th>Feedback Submitted</th>
+        </tr></thead><tbody>`;
+
+    data.students.forEach((s, i) => {
+        html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.roll_number}</td>
+                <td>${s.email}</td>
+                <td>${s.department}</td>
+                <td>Sem ${s.semester}</td>
+                <td>
+                    <span class="rating-badge ${s.feedback_count > 0 ? 'rating-4' : 'rating-1'}">
+                        ${s.feedback_count} submitted
+                    </span>
+                </td>
+            </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+// ── RENDER RATING DISTRIBUTION BAR CHART ──
+function renderRatingChart(distribution) {
+    const container = document.getElementById('ratingChart');
+    if (!distribution || distribution.length === 0) {
+        container.innerHTML = '<p style="color:var(--gray-500); text-align:center;">No data yet.</p>';
+        return;
+    }
+
+    const max = Math.max(...distribution.map(d => d.count));
+    const labels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+    const colors = ['', '#ef4444', '#f97316', '#f59e0b', '#22c55e', '#10b981'];
+
+    let html = '<div style="max-width:500px; margin:0 auto;">';
+    for (let star = 5; star >= 1; star--) {
+        const entry = distribution.find(d => d.rating === star);
+        const count = entry ? entry.count : 0;
+        const width = max > 0 ? (count / max) * 100 : 0;
+        html += `
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px;">
+                <div style="width:80px; text-align:right; font-size:0.85rem; font-weight:600; color:var(--gray-700);">
+                    ${'★'.repeat(star)} ${labels[star]}
+                </div>
+                <div style="flex:1; background:var(--gray-100); border-radius:999px; height:28px; overflow:hidden;">
+                    <div style="width:${width}%; background:${colors[star]}; height:100%; border-radius:999px; 
+                                display:flex; align-items:center; padding-left:10px; 
+                                transition:width 0.5s ease; min-width:${count > 0 ? '40px' : '0'};">
+                        ${count > 0 ? `<span style="color:white; font-size:0.78rem; font-weight:700;">${count}</span>` : ''}
+                    </div>
+                </div>
+                <div style="width:40px; font-size:0.8rem; color:var(--gray-500);">${count}</div>
+            </div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ── STAR DISPLAY (read-only) ───────────────
+function renderStars(n) {
+    return `<span style="color:var(--amber);">${'★'.repeat(n)}</span>${'☆'.repeat(5-n)} ${n}`;
+}
+
+// ── DELETE MODAL ───────────────────────────
+function openDeleteModal(id) {
+    deleteTargetId = id;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    deleteTargetId = null;
+}
+
+async function confirmDelete() {
+    if (!deleteTargetId) return;
+    const res  = await fetch(`/admin/feedback/${deleteTargetId}`, { method: 'DELETE' });
+    const data = await res.json();
+    closeModal();
+    if (data.success) {
+        loadFeedback(currentPage); // Refresh table
+        loadSummary();             // Refresh stats
+    } else {
+        alert('Delete failed: ' + data.message);
+    }
+}
+
+// Close modal on background click
+document.getElementById('deleteModal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+});
+
+// ── TAB SWITCHER ───────────────────────────
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+    // Lazy-load tab data
+    if (tabId === 'courses')  loadCourseStats();
+    if (tabId === 'students') loadStudents();
+    if (tabId === 'ratings')  loadSummary();
+}
+
+// ── LOGOUT ─────────────────────────────────
+async function logout() {
+    await fetch('/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+}
+</script>
+</body>
+</html>

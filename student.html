@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Feedback System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-wrapper">
+
+<!-- ── NAVIGATION BAR ── -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div class="navbar-logo">🎓</div>
+        <div>
+            <div class="navbar-title">Feedback System</div>
+            <div class="navbar-subtitle">STUDENT PORTAL</div>
+        </div>
+    </div>
+    <div class="navbar-right">
+        <span class="navbar-user">Welcome, <span id="studentName">Student</span></span>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="main-content container">
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-nav-btn active" onclick="showTab('submit', this)">📝 Submit Feedback</button>
+        <button class="tab-nav-btn" onclick="showTab('history', this)">📋 My Submissions</button>
+    </div>
+
+    <!-- ══ TAB 1: SUBMIT FEEDBACK ══ -->
+    <div id="tab-submit" class="tab-panel active">
+        <div class="card" style="max-width:650px; margin:0 auto;">
+            <div class="card-header">
+                <span class="card-icon">📝</span>
+                <div>
+                    <h2>Submit Course Feedback</h2>
+                    <p>Rate your courses honestly. Feedback is anonymous to teachers.</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="submitAlert" style="display:none;"></div>
+
+                <!-- Course selection -->
+                <div class="form-group">
+                    <label for="courseSelect">Select Course *</label>
+                    <select id="courseSelect" onchange="checkCourse()">
+                        <option value="">-- Loading courses... --</option>
+                    </select>
+                </div>
+
+                <!-- Already submitted warning -->
+                <div id="alreadySubmitted" class="alert alert-info" style="display:none;">
+                    ✅ You have already submitted feedback for this course.
+                </div>
+
+                <!-- Rating Section -->
+                <div id="ratingSection">
+                    <hr style="border-color: var(--gray-100); margin: 20px 0;">
+                    <p style="font-size:0.82rem; margin-bottom:20px; color:var(--gray-500);">
+                        Rate each aspect: ⭐ Poor | ⭐⭐ Fair | ⭐⭐⭐ Good | ⭐⭐⭐⭐ Very Good | ⭐⭐⭐⭐⭐ Excellent
+                    </p>
+
+                    <!-- Teaching Quality -->
+                    <div class="rating-group">
+                        <div class="rating-label">Teaching Quality *</div>
+                        <div class="stars" id="teaching_stars">
+                            <input type="radio" name="teaching" id="t5" value="5"><label for="t5">★</label>
+                            <input type="radio" name="teaching" id="t4" value="4"><label for="t4">★</label>
+                            <input type="radio" name="teaching" id="t3" value="3"><label for="t3">★</label>
+                            <input type="radio" name="teaching" id="t2" value="2"><label for="t2">★</label>
+                            <input type="radio" name="teaching" id="t1" value="1"><label for="t1">★</label>
+                        </div>
+                    </div>
+
+                    <!-- Course Content -->
+                    <div class="rating-group">
+                        <div class="rating-label">Course Content Quality *</div>
+                        <div class="stars">
+                            <input type="radio" name="content" id="c5" value="5"><label for="c5">★</label>
+                            <input type="radio" name="content" id="c4" value="4"><label for="c4">★</label>
+                            <input type="radio" name="content" id="c3" value="3"><label for="c3">★</label>
+                            <input type="radio" name="content" id="c2" value="2"><label for="c2">★</label>
+                            <input type="radio" name="content" id="c1" value="1"><label for="c1">★</label>
+                        </div>
+                    </div>
+
+                    <!-- Difficulty Level -->
+                    <div class="rating-group">
+                        <div class="rating-label">Difficulty Level *</div>
+                        <div class="stars">
+                            <input type="radio" name="difficulty" id="d5" value="5"><label for="d5">★</label>
+                            <input type="radio" name="difficulty" id="d4" value="4"><label for="d4">★</label>
+                            <input type="radio" name="difficulty" id="d3" value="3"><label for="d3">★</label>
+                            <input type="radio" name="difficulty" id="d2" value="2"><label for="d2">★</label>
+                            <input type="radio" name="difficulty" id="d1" value="1"><label for="d1">★</label>
+                        </div>
+                    </div>
+
+                    <!-- Overall Rating -->
+                    <div class="rating-group">
+                        <div class="rating-label">Overall Rating *</div>
+                        <div class="stars">
+                            <input type="radio" name="overall" id="o5" value="5"><label for="o5">★</label>
+                            <input type="radio" name="overall" id="o4" value="4"><label for="o4">★</label>
+                            <input type="radio" name="overall" id="o3" value="3"><label for="o3">★</label>
+                            <input type="radio" name="overall" id="o2" value="2"><label for="o2">★</label>
+                            <input type="radio" name="overall" id="o1" value="1"><label for="o1">★</label>
+                        </div>
+                    </div>
+
+                    <!-- Comments -->
+                    <div class="form-group">
+                        <label for="comments">Additional Comments (Optional)</label>
+                        <textarea id="comments" 
+                            placeholder="Share your thoughts about the course, teaching style, suggestions for improvement..."
+                            maxlength="500"></textarea>
+                        <small style="color:var(--gray-500); font-size:0.75rem;">
+                            <span id="charCount">0</span>/500 characters
+                        </small>
+                    </div>
+
+                    <button class="btn btn-accent btn-full" onclick="submitFeedback()" id="submitBtn">
+                        <span id="submitBtnText">Submit Feedback</span>
+                        <span id="submitSpinner" class="spinner" style="display:none; border-top-color: var(--navy);"></span>
+                    </button>
+                </div><!-- /ratingSection -->
+
+            </div><!-- /card-body -->
+        </div><!-- /card -->
+    </div><!-- /tab-submit -->
+
+    <!-- ══ TAB 2: MY SUBMISSION HISTORY ══ -->
+    <div id="tab-history" class="tab-panel">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <div>
+                    <h2>My Submitted Feedback</h2>
+                    <p>All feedback you have submitted so far</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="historyContent">
+                    <div class="empty-state">
+                        <div class="empty-icon">⏳</div>
+                        <p>Loading your submissions...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ══ EDIT FEEDBACK MODAL ══ -->
+<div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; padding:20px; overflow-y:auto;">
+    <div style="background:white; border-radius:8px; max-width:650px; margin:20px auto; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="margin:0;">✏️ Edit Feedback</h2>
+            <button onclick="closeEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--gray-400);">×</button>
+        </div>
+        
+        <div id="editAlert" style="display:none;"></div>
+        
+        <div style="margin-bottom:16px;">
+            <p style="color:var(--gray-600); margin:0;"><strong>Course:</strong> <span id="editCourseName"></span></p>
+        </div>
+
+        <!-- Teaching Quality -->
+        <div class="rating-group">
+            <div class="rating-label">Teaching Quality *</div>
+            <div class="stars" id="edit_teaching_stars">
+                <input type="radio" name="edit_teaching" id="et5" value="5"><label for="et5">★</label>
+                <input type="radio" name="edit_teaching" id="et4" value="4"><label for="et4">★</label>
+                <input type="radio" name="edit_teaching" id="et3" value="3"><label for="et3">★</label>
+                <input type="radio" name="edit_teaching" id="et2" value="2"><label for="et2">★</label>
+                <input type="radio" name="edit_teaching" id="et1" value="1"><label for="et1">★</label>
+            </div>
+        </div>
+
+        <!-- Course Content -->
+        <div class="rating-group">
+            <div class="rating-label">Course Content Quality *</div>
+            <div class="stars">
+                <input type="radio" name="edit_content" id="ec5" value="5"><label for="ec5">★</label>
+                <input type="radio" name="edit_content" id="ec4" value="4"><label for="ec4">★</label>
+                <input type="radio" name="edit_content" id="ec3" value="3"><label for="ec3">★</label>
+                <input type="radio" name="edit_content" id="ec2" value="2"><label for="ec2">★</label>
+                <input type="radio" name="edit_content" id="ec1" value="1"><label for="ec1">★</label>
+            </div>
+        </div>
+
+        <!-- Difficulty Level -->
+        <div class="rating-group">
+            <div class="rating-label">Difficulty Level *</div>
+            <div class="stars">
+                <input type="radio" name="edit_difficulty" id="ed5" value="5"><label for="ed5">★</label>
+                <input type="radio" name="edit_difficulty" id="ed4" value="4"><label for="ed4">★</label>
+                <input type="radio" name="edit_difficulty" id="ed3" value="3"><label for="ed3">★</label>
+                <input type="radio" name="edit_difficulty" id="ed2" value="2"><label for="ed2">★</label>
+                <input type="radio" name="edit_difficulty" id="ed1" value="1"><label for="ed1">★</label>
+            </div>
+        </div>
+
+        <!-- Overall Rating -->
+        <div class="rating-group">
+            <div class="rating-label">Overall Rating *</div>
+            <div class="stars">
+                <input type="radio" name="edit_overall" id="eo5" value="5"><label for="eo5">★</label>
+                <input type="radio" name="edit_overall" id="eo4" value="4"><label for="eo4">★</label>
+                <input type="radio" name="edit_overall" id="eo3" value="3"><label for="eo3">★</label>
+                <input type="radio" name="edit_overall" id="eo2" value="2"><label for="eo2">★</label>
+                <input type="radio" name="edit_overall" id="eo1" value="1"><label for="eo1">★</label>
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="form-group">
+            <label for="editComments">Additional Comments (Optional)</label>
+            <textarea id="editComments" 
+                placeholder="Share your thoughts..."
+                maxlength="500"></textarea>
+            <small style="color:var(--gray-500); font-size:0.75rem;">
+                <span id="editCharCount">0</span>/500 characters
+            </small>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+            <button class="btn btn-danger" onclick="deleteEditedFeedback()" id="deleteEditBtn" style="background-color:#dc3545; color:white;">
+                <span id="deleteEditBtnText">🗑️ Delete</span>
+                <span id="deleteEditSpinner" class="spinner" style="display:none; border-top-color: white;"></span>
+            </button>
+            <button class="btn btn-accent" onclick="saveEditedFeedback()" id="saveEditBtn">
+                <span id="saveEditBtnText">Save Changes</span>
+                <span id="saveEditSpinner" class="spinner" style="display:none; border-top-color: var(--navy);"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer>Student Feedback System &copy; 2024 — University Academic Portal</footer>
+
+<script>
+// ── INIT: Check login & load data ──────────
+window.addEventListener('load', async () => {
+    // Verify user is logged in; redirect to login if not
+    const res = await fetch('/auth/me');
+    const data = await res.json();
+    if (!data.success || data.user.role !== 'student') {
+        window.location.href = '/';
+        return;
+    }
+    // Display student name in navbar
+    document.getElementById('studentName').textContent = data.user.name;
+    loadCourses();
+});
+
+// ── LOAD COURSES into dropdown ─────────────
+async function loadCourses() {
+    try {
+        const res = await fetch('/feedback/all-courses');
+        const data = await res.json();
+        const select = document.getElementById('courseSelect');
+        select.innerHTML = '<option value="">-- Select a course --</option>';
+        data.courses.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.course_code} — ${c.course_name} (${c.teacher_name})</option>`;
+        });
+    } catch (err) {
+        document.getElementById('courseSelect').innerHTML = '<option>Error loading courses</option>';
+    }
+}
+
+// ── CHECK IF ALREADY SUBMITTED ─────────────
+async function checkCourse() {
+    const courseId = document.getElementById('courseSelect').value;
+    if (!courseId) return;
+    const res = await fetch(`/feedback/check/${courseId}`);
+    const data = await res.json();
+    const warning = document.getElementById('alreadySubmitted');
+    const submitBtn = document.getElementById('submitBtn');
+    warning.style.display = data.alreadySubmitted ? 'flex' : 'none';
+    submitBtn.disabled = data.alreadySubmitted;
+    submitBtn.style.opacity = data.alreadySubmitted ? '0.5' : '1';
+}
+
+// ── CHARACTER COUNTER for textarea ─────────
+document.addEventListener('DOMContentLoaded', () => {
+    const textarea = document.getElementById('comments');
+    if (textarea) {
+        textarea.addEventListener('input', () => {
+            document.getElementById('charCount').textContent = textarea.value.length;
+        });
+    }
+});
+
+// ── GET STAR RATING VALUE ──────────────────
+function getStarRating(name) {
+    const checked = document.querySelector(`input[name="${name}"]:checked`);
+    return checked ? parseInt(checked.value) : null;
+}
+
+// ── SUBMIT FEEDBACK ────────────────────────
+async function submitFeedback() {
+    const courseId   = document.getElementById('courseSelect').value;
+    const teaching   = getStarRating('teaching');
+    const content    = getStarRating('content');
+    const difficulty = getStarRating('difficulty');
+    const overall    = getStarRating('overall');
+    const comments   = document.getElementById('comments').value.trim();
+
+    // Client-side validation
+    if (!courseId) return showSubmitAlert('Please select a course.', 'error');
+    if (!teaching)   return showSubmitAlert('Please rate Teaching Quality.', 'error');
+    if (!content)    return showSubmitAlert('Please rate Course Content.', 'error');
+    if (!difficulty) return showSubmitAlert('Please rate Difficulty Level.', 'error');
+    if (!overall)    return showSubmitAlert('Please give an Overall Rating.', 'error');
+
+    // Show loading
+    document.getElementById('submitBtnText').textContent = 'Submitting...';
+    document.getElementById('submitSpinner').style.display = 'inline-block';
+    document.getElementById('submitBtn').disabled = true;
+
+    try {
+        const res = await fetch('/feedback/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                course_id: courseId,
+                teaching_rating: teaching,
+                content_rating: content,
+                difficulty_rating: difficulty,
+                overall_rating: overall,
+                comments
+            })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            showSubmitAlert('✅ ' + data.message, 'success');
+            resetForm();     // Clear the form
+            loadCourses();   // Refresh dropdown
+        } else {
+            showSubmitAlert(data.message, 'error');
+        }
+    } catch (err) {
+        showSubmitAlert('Server error. Please try again.', 'error');
+    } finally {
+        document.getElementById('submitBtnText').textContent = 'Submit Feedback';
+        document.getElementById('submitSpinner').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+    }
+}
+
+// ── RESET FORM after submission ────────────
+function resetForm() {
+    document.getElementById('courseSelect').value = '';
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    document.getElementById('comments').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('alreadySubmitted').style.display = 'none';
+}
+
+// ── LOAD HISTORY ───────────────────────────
+async function loadHistory() {
+    try {
+        const res = await fetch('/feedback/my-history');
+        const data = await res.json();
+        const container = document.getElementById('historyContent');
+
+        if (!data.history || data.history.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>You haven't submitted any feedback yet.</p>
+                </div>`;
+            return;
+        }
+
+        // Build table of past submissions
+        let html = `
+            <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Teacher</th>
+                        <th>Teaching</th>
+                        <th>Content</th>
+                        <th>Overall</th>
+                        <th>Comments</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        data.history.forEach(f => {
+            const date = new Date(f.submitted_at).toLocaleDateString('en-IN');
+            html += `
+                <tr>
+                    <td><strong>${f.course_code}</strong><br><small>${f.course_name}</small></td>
+                    <td>${f.teacher_name}</td>
+                    <td>${renderStars(f.teaching_rating)}</td>
+                    <td>${renderStars(f.content_rating)}</td>
+                    <td><span class="rating-badge rating-${f.overall_rating}">${'★'.repeat(f.overall_rating)} ${f.overall_rating}/5</span></td>
+                    <td style="max-width:200px; font-size:0.82rem;">${f.comments || '<em style="color:var(--gray-500)">No comment</em>'}</td>
+                    <td style="white-space:nowrap; font-size:0.82rem;">
+                        ${date}
+                        <button class="btn btn-ghost btn-xs" onclick="openEditModal(${f.id})" style="margin-left:8px; padding:2px 6px; font-size:0.7rem;">✏️ Edit</button>
+                        <button class="btn btn-ghost btn-xs" onclick="quickDeleteFeedback(${f.id})" style="margin-left:4px; padding:2px 6px; font-size:0.7rem; color:#dc3545;">🗑️ Delete</button>
+                    </td>
+                </tr>`;
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+
+    } catch (err) {
+        document.getElementById('historyContent').innerHTML = `<div class="alert alert-error">Failed to load history.</div>`;
+    }
+}
+
+// ── RENDER STAR DISPLAY (read-only) ────────
+function renderStars(rating) {
+    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+}
+
+// ── TAB SWITCHER ───────────────────────────
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+    if (tabId === 'history') loadHistory();
+}
+
+// ── SHOW ALERT in submit form ──────────────
+function showSubmitAlert(msg, type) {
+    const box = document.getElementById('submitAlert');
+    box.className = `alert alert-${type}`;
+    box.innerHTML = msg;
+    box.style.display = 'flex';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── LOGOUT ─────────────────────────────────
+async function logout() {
+    await fetch('/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+}
+
+// ── EDIT MODAL FUNCTIONS ───────────────────
+let currentEditFeedbackId = null;
+
+// Open edit modal and load feedback data
+async function openEditModal(feedbackId) {
+    try {
+        const res = await fetch(`/feedback/get/${feedbackId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+            alert('Failed to load feedback: ' + data.message);
+            return;
+        }
+
+        const feedback = data.feedback;
+        currentEditFeedbackId = feedbackId;
+
+        // Populate modal with current values
+        document.getElementById('editCourseName').textContent = `${feedback.course_code} — ${feedback.course_name}`;
+        
+        // Set ratings
+        document.getElementById(`et${feedback.teaching_rating}`).checked = true;
+        document.getElementById(`ec${feedback.content_rating}`).checked = true;
+        document.getElementById(`ed${feedback.difficulty_rating}`).checked = true;
+        document.getElementById(`eo${feedback.overall_rating}`).checked = true;
+
+        // Set comments
+        const commentText = feedback.comments || '';
+        document.getElementById('editComments').value = commentText;
+        document.getElementById('editCharCount').textContent = commentText.length;
+
+        // Clear any previous alerts
+        document.getElementById('editAlert').style.display = 'none';
+
+        // Show modal
+        document.getElementById('editModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    } catch (err) {
+        alert('Error loading feedback: ' + err.message);
+    }
+}
+
+// Close edit modal
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentEditFeedbackId = null;
+}
+
+// Get star rating from edit form
+function getEditStarRating(name) {
+    const checked = document.querySelector(`input[name="${name}"]:checked`);
+    return checked ? parseInt(checked.value) : null;
+}
+
+// Save edited feedback
+async function saveEditedFeedback() {
+    const teaching = getEditStarRating('edit_teaching');
+    const content = getEditStarRating('edit_content');
+    const difficulty = getEditStarRating('edit_difficulty');
+    const overall = getEditStarRating('edit_overall');
+    const comments = document.getElementById('editComments').value.trim();
+
+    // Validation
+    if (!teaching) return showEditAlert('Please rate Teaching Quality.', 'error');
+    if (!content) return showEditAlert('Please rate Course Content.', 'error');
+    if (!difficulty) return showEditAlert('Please rate Difficulty Level.', 'error');
+    if (!overall) return showEditAlert('Please give an Overall Rating.', 'error');
+
+    // Show loading
+    document.getElementById('saveEditBtnText').textContent = 'Saving...';
+    document.getElementById('saveEditSpinner').style.display = 'inline-block';
+    document.getElementById('saveEditBtn').disabled = true;
+
+    try {
+        const res = await fetch(`/feedback/edit/${currentEditFeedbackId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                teaching_rating: teaching,
+                content_rating: content,
+                difficulty_rating: difficulty,
+                overall_rating: overall,
+                comments
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showEditAlert('✅ ' + data.message, 'success');
+            setTimeout(() => {
+                closeEditModal();
+                loadHistory(); // Refresh the history table
+            }, 800);
+        } else {
+            showEditAlert(data.message, 'error');
+        }
+    } catch (err) {
+        showEditAlert('Server error. Please try again.', 'error');
+    } finally {
+        document.getElementById('saveEditBtnText').textContent = 'Save Changes';
+        document.getElementById('saveEditSpinner').style.display = 'none';
+        document.getElementById('saveEditBtn').disabled = false;
+    }
+}
+
+// Show alert in edit modal
+function showEditAlert(msg, type) {
+    const box = document.getElementById('editAlert');
+    box.className = `alert alert-${type}`;
+    box.innerHTML = msg;
+    box.style.display = 'flex';
+}
+
+// Character counter for edit comments
+document.addEventListener('DOMContentLoaded', () => {
+    const editTextarea = document.getElementById('editComments');
+    if (editTextarea) {
+        editTextarea.addEventListener('input', () => {
+            document.getElementById('editCharCount').textContent = editTextarea.value.length;
+        });
+    }
+});
+
+// ── DELETE FEEDBACK ────────────────────────
+async function deleteEditedFeedback() {
+    // Confirm deletion
+    if (!confirm('⚠️ Are you sure you want to delete this feedback? This action cannot be undone.')) {
+        return;
+    }
+
+    // Show loading
+    document.getElementById('deleteEditBtnText').textContent = 'Deleting...';
+    document.getElementById('deleteEditSpinner').style.display = 'inline-block';
+    document.getElementById('deleteEditBtn').disabled = true;
+
+    try {
+        const res = await fetch(`/feedback/delete/${currentEditFeedbackId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showEditAlert('✅ ' + data.message, 'success');
+            setTimeout(() => {
+                closeEditModal();
+                loadHistory(); // Refresh the history table
+            }, 800);
+        } else {
+            showEditAlert(data.message, 'error');
+        }
+    } catch (err) {
+        showEditAlert('Server error. Please try again.', 'error');
+    } finally {
+        document.getElementById('deleteEditBtnText').textContent = '🗑️ Delete';
+        document.getElementById('deleteEditSpinner').style.display = 'none';
+        document.getElementById('deleteEditBtn').disabled = false;
+    }
+}
+
+// ── QUICK DELETE from table ────────────────
+async function quickDeleteFeedback(feedbackId) {
+    // Confirm deletion
+    if (!confirm('⚠️ Are you sure you want to delete this feedback? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/feedback/delete/${feedbackId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            loadHistory(); // Refresh the history table
+            alert('✅ Feedback deleted successfully!');
+        } else {
+            alert('❌ Error: ' + data.message);
+        }
+    } catch (err) {
+        alert('❌ Server error. Please try again.');
+    }
+}
+</script>
+</body>
+</html>
